@@ -13,7 +13,7 @@ KUSTOMIZE ?= kustomize
 
 # Image URL to use all building/pushing image targets
 VERSION ?= v0.10.2
-IMAGE_REGISTRY ?= ghcr.io/projectbeskar/beskar7
+IMAGE_REGISTRY ?= ghcr.io/clastix/beskar7
 IMAGE_REPO ?= beskar7
 IMG ?= $(IMAGE_REGISTRY)/$(IMAGE_REPO):$(VERSION)
 
