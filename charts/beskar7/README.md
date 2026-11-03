@@ -65,7 +65,7 @@ All configurable values with their defaults:
 | Key | Default | Description |
 |---|---|---|
 | `controllerManager.replicas` | `1` | Number of controller-manager replicas. |
-| `controllerManager.image.repository` | `ghcr.io/projectbeskar/beskar7/beskar7` | Manager image repository. |
+| `controllerManager.image.repository` | `ghcr.io/clastix/beskar7/beskar7` | Manager image repository. |
 | `controllerManager.image.tag` | `""` (uses `Chart.appVersion`) | Image tag. Empty string defers to `Chart.appVersion`. |
 | `controllerManager.image.pullPolicy` | `IfNotPresent` | Image pull policy. |
 | `controllerManager.resources.limits.cpu` | `500m` | CPU limit for the manager container. |

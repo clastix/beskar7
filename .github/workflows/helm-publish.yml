@@ -28,6 +28,8 @@ concurrency:
 jobs:
   helm-publish:
     name: Package and Publish Helm Chart
+    # The clastix fork has no Pages site; the index URL below is upstream's.
+    if: ${{ github.repository == 'projectbeskar/beskar7' }}
     runs-on: ubuntu-latest
 
     steps:
