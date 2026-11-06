@@ -1,4 +1,4 @@
-# Inspector contract fixtures (contract: v4.3)
+# Inspector contract fixtures (contract: v4.4)
 
 This directory holds the **canonical golden fixtures** for the controller ↔
 inspector wire contract — the inbound inspection-report body and the outbound
@@ -85,7 +85,7 @@ inspector asserts it fetches before the disk write, writes exactly `content` on
 ## `VERSION`
 
 A one-line plain-text marker: the contract version this checkout implements
-(currently `v4.3`). It is the root of truth for the version: beskar7 pins a
+(currently `v4.4`). It is the root of truth for the version: beskar7 pins a
 Go const to it (`contract.Version`, `version.go` in this directory), and
 `beskar7-inspector` pins its own Rust `CONTRACT_VERSION` to a vendored copy of
 the same bytes. `TestContractVersion` (`version_test.go`) is the intra-repo
