@@ -57,6 +57,26 @@ var _ = Describe("PhysicalHostPool admission rules", func() {
 		Expect(k8sClient.Update(ctx, without)).To(MatchError(ContainSubstring("poolRef cannot be added or removed")))
 	})
 
+	It("shows 0 for a status count that a merge patch never wrote", func() {
+		pool := testPool("crd-zero-counts", "")
+		Expect(k8sClient.Create(ctx, pool)).To(Succeed())
+		DeferCleanup(func() { Expect(client.IgnoreNotFound(k8sClient.Delete(ctx, pool))).To(Succeed()) })
+
+		// Like updateStatus: only members changes, so the patch carries no available or claimed.
+		base := pool.DeepCopy()
+		pool.Status.Members = 2
+		Expect(k8sClient.Status().Patch(ctx, pool, client.MergeFrom(base))).To(Succeed())
+
+		got := &unstructured.Unstructured{}
+		got.SetGroupVersionKind(infrav1.GroupVersion.WithKind("PhysicalHostPool"))
+		Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(pool), got)).To(Succeed())
+		for _, field := range []string{"members", "available", "claimed"} {
+			_, found, err := unstructured.NestedInt64(got.Object, "status", field)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(found).To(BeTrue(), "status.%s is missing", field)
+		}
+	})
+
 	It("rejects a pool without namespaceSelector or with a name too long for a label key", func() {
 		noSelector := testPool("crd-no-selector", "")
 		noSelector.Spec.NamespaceSelector = nil

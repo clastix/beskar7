@@ -89,9 +89,11 @@ spec:
           status:
             properties:
               available:
+                default: 0
                 format: int32
                 type: integer
               claimed:
+                default: 0
                 format: int32
                 type: integer
               conditions:
@@ -134,6 +136,7 @@ spec:
                 - type
                 x-kubernetes-list-type: map
               members:
+                default: 0
                 format: int32
                 type: integer
             type: object
