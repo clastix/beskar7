@@ -74,13 +74,16 @@ type PhysicalHostPoolSpec struct {
 type PhysicalHostPoolStatus struct {
 	// Members counts the hosts that carry the pool label in hostNamespaces.
 	// +optional
+	// +kubebuilder:default=0
 	Members int32 `json:"members"`
 	// Available counts the members a new claim could take now: Available,
 	// unclaimed, and wiped on release. A host in two pools counts in both.
 	// +optional
+	// +kubebuilder:default=0
 	Available int32 `json:"available"`
 	// Claimed counts the hosts claimed through this pool (spec.consumerPool).
 	// +optional
+	// +kubebuilder:default=0
 	Claimed int32 `json:"claimed"`
 	// Conditions: ClaimsValid.
 	// +optional
