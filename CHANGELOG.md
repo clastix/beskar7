@@ -8,6 +8,18 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- **Share `PhysicalHost`s across namespaces with a cluster-scoped `PhysicalHostPool` (clastix/beskar7#1).** On in the
+  cluster-wide install, off by itself with `--watch-namespaces` or `--controllers=none`. Hosts join a pool with the label `pool.beskar7.infrastructure.cluster.x-k8s.io/<pool>`; the pool lists
+  the namespaces it takes members from (`hostNamespaces`) and the namespaces that may claim (`namespaceSelector`). A
+  `Beskar7Machine` opts in with the new immutable `spec.poolRef`; the controller records the pool on the host in the new
+  `spec.consumerPool`, together with `consumerRef`. A `consumerRef` in another namespace (SEC-12) is now valid only while
+  that pool still holds the host and grants the consumer's namespace, checked live by the callback server. Pool claims
+  take only hosts with `cleaningMode: Metadata`. New reason `PoolNotAvailable`; pool deletion waits for its claims. Also:
+  pool status (`members`, `available`, `claimed`, `ClaimsValid`), `PoolClaimValid` on the machine for a revoked grant, a
+  ValidatingAdmissionPolicy that keeps the claim's pool label and `consumerPool` while claimed, release of a pool host
+  on a hardware mismatch, `Beskar7Cluster.spec.poolRefs` for failure domains, and callback credentials bound to the
+  consumer's namespace (new `consumer-namespace` key in the bootstrap-token Secret). See `docs/physicalhostpool.md`.
+
 - **Opt-in disk wipe when a `PhysicalHost` is released (contract v4.4, #306).** New optional field
   `PhysicalHost.spec.cleaningMode`: `Disabled` (default, unchanged behaviour) or `Metadata`. A host released with
   `Metadata` goes to the new `Cleaning` state instead of `Available`: the PhysicalHost controller mints credentials for
