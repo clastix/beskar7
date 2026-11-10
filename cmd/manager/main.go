@@ -241,6 +241,7 @@ func main() {
 		maxConcurrentReconciles: maxConcurrentReconciles,
 		cleaningImageURL:        cleaningImageURL,
 		cleaningTimeout:         cleaningTimeout,
+		watchNamespaces:         parseWatchNamespaces(watchNamespacesRaw),
 	}
 	// flag.Visit only sees flags that were actually given, which is how
 	// validate tells the --leader-elect default apart from an explicit request.
@@ -252,6 +253,10 @@ func main() {
 	if err := cfg.validate(); err != nil {
 		setupLog.Error(err, "contradictory flags")
 		os.Exit(1)
+	}
+	if !cfg.hostPools() {
+		setupLog.Info("PhysicalHostPools are off: they need the cluster-wide install with controllers, " +
+			"not --watch-namespaces or --controllers=none")
 	}
 	if cfg.controllers == controllersNone {
 		setupLog.Info("Callback-only mode: serving the host-callback endpoints and health probes only; "+
@@ -396,6 +401,8 @@ func setupManager(mgr ctrl.Manager, cfg managerConfig) error {
 // way the environment's proxy is never used.
 func setupControllers(mgr ctrl.Manager, cfg managerConfig) error {
 	setupLog.Info("Reconciler concurrency", "maxConcurrentReconciles", cfg.maxConcurrentReconciles)
+	// Before any SetupWithManager: the machine and cluster controllers add their pool watches only when on.
+	controllers.EnableHostPools(cfg.hostPools())
 	redfishFactory := internalredfish.NewClientFactory(cfg.bmcProxy)
 
 	if err := (&controllers.Beskar7MachineReconciler{
@@ -431,6 +438,14 @@ func setupControllers(mgr ctrl.Manager, cfg managerConfig) error {
 		MaxConcurrentReconciles: cfg.maxConcurrentReconciles,
 	}).SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create controller %s: %w", "PhysicalHost", err)
+	}
+
+	if cfg.hostPools() {
+		if err := (&controllers.PhysicalHostPoolReconciler{
+			Client: mgr.GetClient(),
+		}).SetupWithManager(mgr); err != nil {
+			return fmt.Errorf("unable to create controller %s: %w", "PhysicalHostPool", err)
+		}
 	}
 	return nil
 }

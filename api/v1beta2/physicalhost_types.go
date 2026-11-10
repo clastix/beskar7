@@ -162,6 +162,15 @@ type PhysicalHostSpec struct {
 	// +optional
 	ConsumerRef *corev1.ObjectReference `json:"consumerRef,omitempty"`
 
+	// ConsumerPool is the PhysicalHostPool the current claim was made through.
+	// Set and cleared by the controller together with ConsumerRef; a ConsumerRef
+	// in another namespace is valid only while this pool still holds the host
+	// and grants that namespace.
+	// +kubebuilder:validation:MaxLength=63
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`
+	// +optional
+	ConsumerPool string `json:"consumerPool,omitempty"`
+
 	// NetworkDataSecretRef is the name of a Secret in the PhysicalHost's
 	// namespace holding this host's network configuration for the installed
 	// OS in its "networkData" key. The bytes are opaque: the controller serves
