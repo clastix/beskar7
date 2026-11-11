@@ -76,6 +76,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Fixed
 
+- **A ClusterClass Cluster can now change its `hostPool`.** The `poolRef` immutability rules sat on
+  `Beskar7MachineSpec`, so they also ran on `Beskar7MachineTemplate` and rejected the server-side apply dry-run that
+  Cluster API runs before it rotates a changed template: the topology stalled with `poolRef is immutable` and the
+  workers never rolled. The rules now apply to `Beskar7Machine` only; a template may add, change or remove `poolRef`,
+  and the machines created from it roll.
+
 - **A released host whose OS ignored the graceful shutdown stayed powered on indefinitely (RELEASE-POWER).**
   Deleting a `Beskar7Machine` shuts a `Ready` host down gracefully (ACPI), which is only a request. A host
   released soon after its OS booted (seen 25 to 70 seconds after `Ready`) can lose it, because the guest is

@@ -158,9 +158,9 @@ const (
 // Simplified for iPXE + inspection workflow.
 //
 // The rule below also runs where this spec is embedded, in
-// Beskar7MachineTemplate (spec.template.spec).
+// Beskar7MachineTemplate (spec.template.spec). The poolRef rules sit on
+// Beskar7Machine.Spec instead, so a template stays editable for ClusterClass.
 // +kubebuilder:validation:XValidation:rule="has(self.targetImageDigest) != has(self.targetImageDigestURL)",message="set exactly one of targetImageDigest and targetImageDigestURL"
-// +kubebuilder:validation:XValidation:rule="has(self.poolRef) == has(oldSelf.poolRef)",message="poolRef cannot be added or removed"
 type Beskar7MachineSpec struct {
 	// ProviderID is the unique identifier as specified by the cloud provider.
 	// Format b7://<namespace>/<physicalhost-name>; set once the host is
@@ -292,10 +292,10 @@ type Beskar7MachineSpec struct {
 	// machine's own namespace. Only members of that pool are considered, with no
 	// fallback; HostSelector and the failure domain still apply. The pool must
 	// grant the machine's namespace, otherwise the machine waits with
-	// PoolNotAvailable. Immutable.
+	// PoolNotAvailable. Immutable on a Beskar7Machine; a template may change it,
+	// which rolls the machines created from it.
 	// +kubebuilder:validation:MaxLength=63
 	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`
-	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="poolRef is immutable"
 	// +optional
 	PoolRef string `json:"poolRef,omitempty"`
 }
@@ -399,6 +399,10 @@ type Beskar7Machine struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	// Not on Beskar7MachineSpec: Cluster API dry-runs a changed template before it
+	// rotates it, and a transition rule there would reject that dry-run.
+	// +kubebuilder:validation:XValidation:rule="has(self.poolRef) == has(oldSelf.poolRef)",message="poolRef cannot be added or removed"
+	// +kubebuilder:validation:XValidation:rule="!has(self.poolRef) || !has(oldSelf.poolRef) || self.poolRef == oldSelf.poolRef",message="poolRef is immutable"
 	Spec   Beskar7MachineSpec   `json:"spec,omitempty"`
 	Status Beskar7MachineStatus `json:"status,omitempty"`
 }

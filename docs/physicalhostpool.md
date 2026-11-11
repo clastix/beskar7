@@ -25,7 +25,7 @@ machine with `poolRef` waits with `PoolNotAvailable`. What the install adds:
 |---|---|---|
 | Pool: `hostNamespaces`, `namespaceSelector` | `PhysicalHostPool` (cluster-scoped) | admin |
 | Host is in pool `<name>` | label `pool.beskar7.infrastructure.cluster.x-k8s.io/<name>` on the `PhysicalHost`, any value | admin |
-| Machine wants pool `<name>` | `Beskar7Machine.spec.poolRef` (cannot be added, changed or removed) | cluster owner, usually through the template |
+| Machine wants pool `<name>` | `Beskar7Machine.spec.poolRef` (cannot be added, changed or removed; a `Beskar7MachineTemplate` may change it, which rolls its machines) | cluster owner, usually through the template |
 | Failure domains from pools | `Beskar7Cluster.spec.poolRefs` | cluster owner, usually through the ClusterClass |
 | The pool a claim went through | `PhysicalHost.spec.consumerPool` | controller, in the same update as `consumerRef` |
 
