@@ -97,9 +97,6 @@ spec:
                 maxLength: 63
                 pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                 type: string
-                x-kubernetes-validations:
-                - message: poolRef is immutable
-                  rule: self == oldSelf
               providerID:
                 maxLength: 512
                 minLength: 1
@@ -125,10 +122,13 @@ spec:
             - targetImageURL
             type: object
             x-kubernetes-validations:
-            - message: set exactly one of targetImageDigest and targetImageDigestURL
-              rule: has(self.targetImageDigest) != has(self.targetImageDigestURL)
             - message: poolRef cannot be added or removed
               rule: has(self.poolRef) == has(oldSelf.poolRef)
+            - message: poolRef is immutable
+              rule: '!has(self.poolRef) || !has(oldSelf.poolRef) || self.poolRef ==
+                oldSelf.poolRef'
+            - message: set exactly one of targetImageDigest and targetImageDigestURL
+              rule: has(self.targetImageDigest) != has(self.targetImageDigestURL)
           status:
             properties:
               addresses:

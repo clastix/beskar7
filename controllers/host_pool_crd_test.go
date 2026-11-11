@@ -57,6 +57,27 @@ var _ = Describe("PhysicalHostPool admission rules", func() {
 		Expect(k8sClient.Update(ctx, without)).To(MatchError(ContainSubstring("poolRef cannot be added or removed")))
 	})
 
+	It("lets a template add, change and remove poolRef, so ClusterClass can rotate it", func() {
+		tmpl := &infrav1.Beskar7MachineTemplate{
+			ObjectMeta: metav1.ObjectMeta{Name: "crd-pool-template", Namespace: "default"},
+			Spec: infrav1.Beskar7MachineTemplateSpec{
+				Template: infrav1.Beskar7MachineTemplateResource{
+					Spec: testPoolMachine("unused", "default", poolTestPool).Spec,
+				},
+			},
+		}
+		Expect(k8sClient.Create(ctx, tmpl)).To(Succeed())
+		DeferCleanup(func() { Expect(client.IgnoreNotFound(k8sClient.Delete(ctx, tmpl))).To(Succeed()) })
+
+		// Cluster API dry-runs the changed template on the existing object before it rotates it.
+		for _, pool := range []string{poolTestGPUPool, "", poolTestPool} {
+			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(tmpl), tmpl)).To(Succeed())
+			tmpl.Spec.Template.Spec.PoolRef = pool
+			Expect(k8sClient.Update(ctx, tmpl.DeepCopy(), client.DryRunAll)).To(Succeed(), "dry-run poolRef %q", pool)
+			Expect(k8sClient.Update(ctx, tmpl)).To(Succeed(), "poolRef %q", pool)
+		}
+	})
+
 	It("shows 0 for a status count that a merge patch never wrote", func() {
 		pool := testPool("crd-zero-counts", "")
 		Expect(k8sClient.Create(ctx, pool)).To(Succeed())
